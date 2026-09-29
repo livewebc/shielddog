@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$SHIELDDOG - The Wise & Cute Shield Dog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            100: '#FFF8E1',
+                            200: '#FFE082',
+                            300: '#FFD54F',
+                            400: '#FFCA28',
+                            500: '#FFB300',
+                            600: '#FFA000',
+                            700: '#FF6F00',
+                        },
+                        realmDark: '#0B0908',
+                        realmCard: '#18120C',
+                        realmBorder: '#4A3B2C',
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 4s ease-in-out infinite',
+                        'glow-pulse': 'glowPulse 2.5s ease-in-out infinite alternate',
+                        'spin-slow': 'spin 25s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glowPulse: {
+                            '0%': { filter: 'drop-shadow(0 0 15px rgba(255, 179, 0, 0.4))' },
+                            '100%': { filter: 'drop-shadow(0 0 40px rgba(255, 179, 0, 0.85))' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0B0908;
+            color: #F7E7CE;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFCA28 35%, #FF8F00 75%, #B76E00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-medieval {
+            background: linear-gradient(180deg, rgba(28, 20, 14, 0.94) 0%, rgba(12, 9, 7, 0.98) 100%);
+            border: 1px solid rgba(255, 179, 0, 0.35);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+        }
+
+        .btn-gold {
+            background: linear-gradient(180deg, #FFE082 0%, #FFB300 45%, #C67D00 100%);
+            color: #1A0D00;
+            font-weight: 800;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 20px rgba(255, 179, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(255, 179, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            filter: brightness(1.1);
+        }
+
+        #gameCanvas {
+            touch-action: none;
+            background: radial-gradient(circle, #1a120c 0%, #080605 100%);
+            cursor: crosshair;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0B0908; }
+        ::-webkit-scrollbar-thumb { background: #4A3B2C; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFB300; }
+    </style>
+</head>
+<body class="relative min-h-screen">
+
+    <canvas id="particleCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
+
+    <header class="fixed top-0 left-0 right-0 z-50 bg-realmDark/90 backdrop-blur-md border-b border-realmBorder/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-12 h-12 rounded-full border-2 border-gold-500 overflow-hidden shadow-[0_0_20px_rgba(255,179,0,0.7)] group-hover:scale-105 transition-transform bg-amber-950 relative flex items-center justify-center">
+                    <img class="w-full h-full object-cover relative z-10" 
+                         src="https://myimgs.org/storage/images/49071/Shielddogphoto1.jpg" 
+                         referrerpolicy="no-referrer"
+                         alt="Shield Dog Logo"
+                         onerror="handleImageError(this, '$SHIELDDOG')">
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-cinzel text-xl font-black gold-gradient-text tracking-wider">SHIELD DOG</span>
+                    <span class="text-[10px] text-pink-300 font-bold uppercase tracking-widest -mt-1 flex items-center gap-1">
+                        <i class="fa-solid fa-ribbon text-pink-400"></i> $SHIELDDOG
+                    </span>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-6 font-cinzel text-xs font-bold tracking-widest uppercase">
+                <a href="#about" class="text-amber-200/80 hover:text-gold-400 transition-colors">Why Shield Dog</a>
+                <a href="#simulator" class="text-amber-200/80 hover:text-gold-400 transition-colors">Shield Your Bag</a>
+                <a href="#gallery" class="text-amber-200/80 hover:text-gold-400 transition-colors">Gallery</a>
+            </nav>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="#buy" class="btn-gold px-4 sm:px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-cinzel flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved"></i> BUY $SHIELDDOG
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative z-10 pt-20">
+
+        <section class="relative min-h-[90vh] flex items-center justify-center py-12 px-4 overflow-hidden">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[700px] h-[350px] sm:h-[700px] bg-amber-500/15 rounded-full blur-[140px] pointer-events-none"></div>
+
+            <div class="max-w-6xl mx-auto text-center flex flex-col items-center">
+                
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full card-medieval border-gold-500/50 text-gold-300 text-xs sm:text-sm font-semibold tracking-wide mb-6 shadow-[0_0_25px_rgba(255,179,0,0.25)]">
+                    <i class="fa-solid fa-shield-heart text-pink-400"></i> THE DEFENDER OF SOLANA
+                </div>
+
+                <h1 class="font-cinzel text-4xl sm:text-6xl md:text-7xl font-black tracking-tight mb-3 drop-shadow-[0_10px_25px_rgba(0,0,0,0.9)]">
+                    <span class="gold-gradient-text">SHIELD DOG ($SHIELDDOG)</span>
+                </h1>
+                
+                <p class="font-cinzel text-lg sm:text-2xl text-amber-200 font-bold tracking-wider mb-4">
+                    INTELLIGENT. CUTE. UNBREAKABLE.
+                </p>
+
+                <p class="max-w-2xl text-sm sm:text-base text-amber-100/80 mb-8 font-sans leading-relaxed px-4">
+                    Adorned with a cute pink bow, forged knight armor, and holding an ancient runic shield of protection. Shield Dog defends your portfolio from rugs, red candles, and bear market FUD!
+                </p>
+
+                <!-- Hero Main Photo Frame -->
+                <div class="relative w-80 h-80 sm:w-[500px] sm:h-[500px] my-2 animate-float group">
+                    <div class="absolute inset-[-14px] rounded-[42px] border-2 border-dashed border-gold-500/50 animate-spin-slow pointer-events-none"></div>
+                    <div class="absolute inset-[-26px] rounded-[52px] border border-gold-400/20 pointer-events-none"></div>
+                    
+                    <div class="w-full h-full rounded-[36px] overflow-hidden card-medieval p-2 border-2 border-gold-500 animate-glow-pulse relative shadow-[0_0_60px_rgba(255,179,0,0.6)] flex items-center justify-center bg-black">
+                        <img class="w-full h-full object-cover rounded-[28px] transition-transform duration-500 group-hover:scale-105 relative z-10" 
+                             src="https://myimgs.org/storage/images/49071/Shielddogphoto1.jpg" 
+                             referrerpolicy="no-referrer"
+                             alt="Shield Dog Main Artwork" 
+                             onerror="handleImageError(this, '$SHIELDDOG')">
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-4 mt-8" id="buy">
+                    <a href="#" class="btn-gold px-8 py-4 rounded-xl text-sm sm:text-base font-cinzel font-black tracking-wider flex items-center gap-3">
+                        <i class="fa-solid fa-cart-shopping"></i> BUY $SHIELDDOG
+                    </a>
+                    <a href="https://t.me/Shielddogsol" target="_blank" class="px-7 py-4 rounded-xl text-sm sm:text-base font-cinzel font-bold tracking-wider bg-realmDark/90 text-gold-300 border border-gold-500/50 hover:border-gold-300 hover:bg-amber-950/40 transition-all flex items-center gap-2">
+                        <i class="fa-brands fa-telegram text-sky-400"></i> TELEGRAM
+                    </a>
+                    <a href="https://x.com/ShieldDogSol" target="_blank" class="px-7 py-4 rounded-xl text-sm sm:text-base font-cinzel font-bold tracking-wider bg-realmDark/90 text-gold-300 border border-gold-500/50 hover:border-gold-300 hover:bg-amber-950/40 transition-all flex items-center gap-2">
+                        <i class="fa-brands fa-x-twitter text-white"></i> TWITTER / X
+                    </a>
+                </div>
+
+                <!-- Contract Address -->
+                <div class="mt-8 max-w-xl w-full card-medieval p-3 sm:p-4 rounded-2xl border-gold-500/40 flex items-center justify-between gap-2 shadow-xl">
+                    <div class="flex items-center gap-3 overflow-hidden text-left pl-2">
+                        <i class="fa-solid fa-shield text-gold-400 text-xl shrink-0"></i>
+                        <div class="flex flex-col overflow-hidden">
+                            <span class="text-[10px] text-amber-400/80 font-bold uppercase tracking-widest font-cinzel">Official Solana Contract Address</span>
+                            <span id="caText" class="text-xs sm:text-sm font-mono text-gold-100 font-semibold truncate">ShieldDogSolanaToken11111111111111111111111</span>
+                        </div>
+                    </div>
+                    <button onclick="copyCA()" class="btn-gold px-4 py-2.5 rounded-xl text-xs font-cinzel shrink-0 flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i>
+                        <span id="copyBtnText">COPY</span>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="about" class="py-20 px-4 relative border-t border-realmBorder/60 bg-realmDark/70">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-14">
+                    <span class="text-gold-400 text-xs font-bold uppercase tracking-widest font-cinzel">Unbreakable Defense</span>
+                    <h2 class="font-cinzel text-3xl sm:text-5xl font-black gold-gradient-text mt-2">SHIELDING YOUR PORTFOLIO</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="card-medieval p-8 rounded-3xl border-gold-500/30 hover:border-gold-400 transition-all group hover:-translate-y-2">
+                        <div class="w-16 h-16 rounded-2xl bg-gold-500/20 border border-gold-500/50 flex items-center justify-center text-gold-400 text-3xl mb-5 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-shield"></i>
+                        </div>
+                        <h3 class="font-cinzel font-bold text-white text-xl mb-3">Runic Shield Spell</h3>
+                        <p class="text-sm text-amber-200/70 leading-relaxed">
+                            Deflects market dumps, panic sells, and bad red candles using pure golden magic and tactical bow power.
+                        </p>
+                    </div>
+
+                    <div class="card-medieval p-8 rounded-3xl border-gold-500/30 hover:border-gold-400 transition-all group hover:-translate-y-2">
+                        <div class="w-16 h-16 rounded-2xl bg-pink-500/20 border border-pink-500/50 flex items-center justify-center text-pink-400 text-3xl mb-5 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3 class="font-cinzel font-bold text-white text-xl mb-3">10,000 IQ Wisdom</h3>
+                        <p class="text-sm text-amber-200/70 leading-relaxed">
+                            Armed with medieval scrolls and maps, Shield Dog calculates the safest path to the moon.
+                        </p>
+                    </div>
+
+                    <div class="card-medieval p-8 rounded-3xl border-gold-500/30 hover:border-gold-400 transition-all group hover:-translate-y-2">
+                        <div class="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 text-3xl mb-5 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-shield-heart"></i>
+                        </div>
+                        <h3 class="font-cinzel font-bold text-white text-xl mb-3">Diamond Paw Guard</h3>
+                        <p class="text-sm text-amber-200/70 leading-relaxed">
+                            An army of loyal knights holding the line on Solana. Together we shield each other's bags!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="simulator" class="py-20 px-4 relative">
+            <div class="max-w-4xl mx-auto text-center">
+                <span class="text-gold-400 text-xs font-bold uppercase tracking-widest font-cinzel">Interactive Defense Simulator</span>
+                <h2 class="font-cinzel text-3xl sm:text-5xl font-black gold-gradient-text mt-2 mb-3">SHIELD YOUR BAG</h2>
+                <p class="text-amber-200/80 max-w-xl mx-auto text-sm sm:text-base mb-8">
+                    Drag or move Shield Dog's golden shield around to block incoming Red Candles, Scams, and Bear market FUD!
+                </p>
+
+                <div class="card-medieval p-4 sm:p-6 rounded-3xl border-2 border-gold-500/40 relative overflow-hidden flex flex-col items-center select-none shadow-2xl">
+                    <div class="flex items-center justify-between w-full max-w-md mb-4 bg-black/70 px-6 py-3 rounded-2xl border border-gold-500/30">
+                        <div class="text-left">
+                            <div class="text-[10px] text-amber-400 font-bold uppercase tracking-widest font-cinzel">PROJECTILES DEFLECTED</div>
+                            <div id="gameScore" class="text-2xl sm:text-3xl font-black font-cinzel text-gold-300">0</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] text-pink-400 font-bold uppercase tracking-widest font-cinzel">BAG INTEGRITY</div>
+                            <div id="bagHealth" class="text-2xl sm:text-3xl font-black font-cinzel text-emerald-400">100%</div>
+                        </div>
+                    </div>
+
+                    <div class="relative w-full max-w-2xl h-[380px] sm:h-[420px] rounded-2xl overflow-hidden border border-gold-500/40">
+                        <canvas id="gameCanvas" class="w-full h-full block"></canvas>
+                        
+                        <div id="gameOverlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+                            <i class="fa-solid fa-shield text-gold-400 text-5xl mb-4"></i>
+                            <h3 class="font-cinzel text-2xl font-black text-white mb-2">DEFEND THE PORTFOLIO</h3>
+                            <p class="text-xs sm:text-sm text-amber-200/80 max-w-sm mb-6">
+                                Move your cursor or finger across the canvas to control Shield Dog's barrier and deflect all falling threats!
+                            </p>
+                            <button onclick="startGame()" class="btn-gold px-8 py-3.5 rounded-xl text-sm font-cinzel font-black tracking-wider">
+                                START DEFENDING
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-amber-400/80 font-cinzel font-bold mt-4">
+                        <i class="fa-solid fa-hand-pointer mr-1"></i> Drag / Touch screen to position shield
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="gallery" class="py-20 px-4 relative border-t border-realmBorder/60 bg-realmDark/80">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-14">
+                    <span class="text-gold-400 text-xs font-bold uppercase tracking-widest font-cinzel">Gallery</span>
+                    <h2 class="font-cinzel text-3xl sm:text-5xl font-black gold-gradient-text mt-2">SHIELD DOG SHOWCASE</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Gallery Item 1 -->
+                    <div class="card-medieval p-4 rounded-2xl border-gold-500/30 group">
+                        <div class="overflow-hidden rounded-xl h-64 border border-gold-500/30 bg-black flex items-center justify-center relative">
+                            <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                 src="https://myimgs.org/storage/images/49072/Gemini_Generated_Image_8lj8pe8lj8pe8lj8.jpg" 
+                                 referrerpolicy="no-referrer"
+                                 alt="Runic Shield Power" 
+                                 onerror="handleImageError(this, 'Runic Shield Power')">
+                        </div>
+                        <div class="p-3 text-center">
+                            <h4 class="font-cinzel font-bold text-white text-base">Runic Shield Power</h4>
+                            <p class="text-xs text-amber-300/70 mt-1">Charging up resistance against market dips.</p>
+                        </div>
+                    </div>
+
+                    <!-- Gallery Item 2 -->
+                    <div class="card-medieval p-4 rounded-2xl border-gold-500/30 group">
+                        <div class="overflow-hidden rounded-xl h-64 border border-gold-500/30 bg-black flex items-center justify-center relative">
+                            <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                 src="https://myimgs.org/storage/images/49073/Gemini_Generated_Image_5qmr9d5qmr9d5qmr.jpg" 
+                                 referrerpolicy="no-referrer"
+                                 alt="Tactical Strategy" 
+                                 onerror="handleImageError(this, 'Tactical Strategy')">
+                        </div>
+                        <div class="p-3 text-center">
+                            <h4 class="font-cinzel font-bold text-white text-base">Tactical Strategy</h4>
+                            <p class="text-xs text-amber-300/70 mt-1">Studying ancient maps & candles with high-IQ precision.</p>
+                        </div>
+                    </div>
+
+                    <!-- Gallery Item 3 -->
+                    <div class="card-medieval p-4 rounded-2xl border-gold-500/30 group">
+                        <div class="overflow-hidden rounded-xl h-64 border border-gold-500/30 bg-black flex items-center justify-center relative">
+                            <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                 src="https://myimgs.org/storage/images/49074/Gemini_Generated_Image_p8q6hup8q6hup8q6.jpg" 
+                                 referrerpolicy="no-referrer"
+                                 alt="Pink Bow Armor" 
+                                 onerror="handleImageError(this, 'Pink Bow Armor')">
+                        </div>
+                        <div class="p-3 text-center">
+                            <h4 class="font-cinzel font-bold text-white text-base">Pink Bow Armor</h4>
+                            <p class="text-xs text-amber-300/70 mt-1">Cutest golden retriever knight defending Solana holders.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="py-12 px-4 bg-black border-t border-realmBorder/60 text-center relative z-10">
+            <div class="max-w-4xl mx-auto flex flex-col items-center">
+                <span class="font-cinzel text-xl font-black gold-gradient-text tracking-wider mb-2">$SHIELDDOG</span>
+                <div class="flex items-center gap-4 mb-4">
+                    <a href="https://t.me/Shielddogsol" target="_blank" class="text-amber-300 hover:text-gold-400 transition-colors text-sm font-cinzel font-bold flex items-center gap-1.5">
+                        <i class="fa-brands fa-telegram text-sky-400"></i> Telegram
+                    </a>
+                    <span class="text-amber-700">•</span>
+                    <a href="https://x.com/ShieldDogSol" target="_blank" class="text-amber-300 hover:text-gold-400 transition-colors text-sm font-cinzel font-bold flex items-center gap-1.5">
+                        <i class="fa-brands fa-x-twitter text-white"></i> X (Twitter)
+                    </a>
+                </div>
+                <p class="text-xs text-amber-200/60 max-w-md mb-6">
+                    Disclaimer: $SHIELDDOG is a meme coin created for community entertainment and fun. Protect your bag and stay cute!
+                </p>
+                <div class="text-[11px] text-amber-500/50 font-cinzel">
+                    © 2026 SHIELD DOG • All Rights Reserved.
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // Global error handler for robust image fallback
+        function handleImageError(imgEl, title) {
+            imgEl.onerror = null;
+            imgEl.src = `https://placehold.co/600x600/18120C/FFB300?text=${encodeURIComponent(title || '$SHIELDDOG')}`;
+        }
+
+        // Ambient Particles Animation
+        const pCanvas = document.getElementById('particleCanvas');
+        const pCtx = pCanvas.getContext('2d');
+        let pArray = [];
+
+        function resizeParticles() {
+            pCanvas.width = window.innerWidth;
+            pCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeParticles);
+        resizeParticles();
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * pCanvas.width;
+                this.y = Math.random() * pCanvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.vy = -(Math.random() * 0.5 + 0.2);
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.alpha = Math.random() * 0.7 + 0.2;
+            }
+            update() {
+                this.y += this.vy;
+                this.x += this.vx;
+                if (this.y < 0) { this.reset(); this.y = pCanvas.height; }
+            }
+            draw() {
+                pCtx.save();
+                pCtx.globalAlpha = this.alpha;
+                pCtx.fillStyle = '#FFCA28';
+                pCtx.shadowBlur = 6;
+                pCtx.shadowColor = '#FFB300';
+                pCtx.beginPath();
+                pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                pCtx.fill();
+                pCtx.restore();
+            }
+        }
+
+        for (let i = 0; i < 45; i++) pArray.push(new Particle());
+
+        function loopParticles() {
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            pArray.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(loopParticles);
+        }
+        loopParticles();
+
+        // Copy Contract Address
+        function copyCA() {
+            const caText = document.getElementById('caText').innerText;
+            const el = document.createElement('textarea');
+            el.value = caText;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            const btnText = document.getElementById('copyBtnText');
+            btnText.innerText = 'COPIED!';
+            setTimeout(() => { btnText.innerText = 'COPY'; }, 2000);
+        }
+
+        // Interactive Shield Defense Game Logic
+        const gCanvas = document.getElementById('gameCanvas');
+        const gCtx = gCanvas.getContext('2d');
+
+        let isGaming = false;
+        let score = 0;
+        let health = 100;
+        let projectiles = [];
+        let particlesEffect = [];
+
+        let shield = { x: 200, y: 320, radius: 42 };
+
+        function updateCanvasSize() {
+            const rect = gCanvas.parentElement.getBoundingClientRect();
+            gCanvas.width = rect.width;
+            gCanvas.height = rect.height;
+            shield.y = gCanvas.height - 60;
+        }
+        window.addEventListener('resize', updateCanvasSize);
+        updateCanvasSize();
+
+        function moveShield(e) {
+            const rect = gCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            shield.x = clientX - rect.left;
+            shield.y = clientY - rect.top;
+
+            shield.x = Math.max(shield.radius, Math.min(gCanvas.width - shield.radius, shield.x));
+            shield.y = Math.max(shield.radius, Math.min(gCanvas.height - shield.radius, shield.y));
+        }
+
+        gCanvas.addEventListener('mousemove', moveShield);
+        gCanvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            moveShield(e);
+        }, { passive: false });
+
+        function startGame() {
+            document.getElementById('gameOverlay').style.display = 'none';
+            score = 0;
+            health = 100;
+            projectiles = [];
+            particlesEffect = [];
+            document.getElementById('gameScore').innerText = '0';
+            document.getElementById('bagHealth').innerText = '100%';
+            isGaming = true;
+        }
+
+        function spawnProjectile() {
+            if (!isGaming) return;
+            const types = [
+                { color: '#EF4444', speed: 3.2, text: '📉 DUMP' },
+                { color: '#F59E0B', speed: 4.0, text: '⚠️ SCAM' },
+                { color: '#DC2626', speed: 2.8, text: '🐻 FUD' }
+            ];
+            const pType = types[Math.floor(Math.random() * types.length)];
+            projectiles.push({
+                x: Math.random() * (gCanvas.width - 40) + 20,
+                y: -20,
+                radius: 16,
+                speed: pType.speed,
+                color: pType.color,
+                text: pType.text
+            });
+        }
+
+        setInterval(spawnProjectile, 750);
+
+        function gameLoop() {
+            gCtx.clearRect(0, 0, gCanvas.width, gCanvas.height);
+
+            if (isGaming) {
+                // Draw Target Bag at Bottom
+                gCtx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+                gCtx.fillRect(0, gCanvas.height - 20, gCanvas.width, 20);
+                gCtx.fillStyle = '#10B981';
+                gCtx.font = 'bold 11px Cinzel';
+                gCtx.fillText('PORTFOLIO BAG ZONE', 15, gCanvas.height - 6);
+
+                // Draw Shield
+                gCtx.save();
+                gCtx.shadowBlur = 25;
+                gCtx.shadowColor = '#FFB300';
+                
+                gCtx.beginPath();
+                gCtx.arc(shield.x, shield.y, shield.radius, 0, Math.PI * 2);
+                gCtx.fillStyle = 'rgba(255, 179, 0, 0.25)';
+                gCtx.fill();
+                gCtx.lineWidth = 4;
+                gCtx.strokeStyle = '#FFCA28';
+                gCtx.stroke();
+
+                gCtx.beginPath();
+                gCtx.arc(shield.x, shield.y, shield.radius - 12, 0, Math.PI * 2);
+                gCtx.fillStyle = '#2A1B0E';
+                gCtx.fill();
+                gCtx.strokeStyle = '#FFE082';
+                gCtx.lineWidth = 2;
+                gCtx.stroke();
+
+                gCtx.fillStyle = '#FFD54F';
+                gCtx.font = 'bold 12px Cinzel';
+                gCtx.textAlign = 'center';
+                gCtx.fillText('SHIELD', shield.x, shield.y + 4);
+                gCtx.restore();
+
+                // Process Projectiles
+                for (let i = projectiles.length - 1; i >= 0; i--) {
+                    let p = projectiles[i];
+                    p.y += p.speed;
+
+                    gCtx.save();
+                    gCtx.beginPath();
+                    gCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    gCtx.fillStyle = p.color;
+                    gCtx.shadowBlur = 12;
+                    gCtx.shadowColor = p.color;
+                    gCtx.fill();
+
+                    gCtx.fillStyle = '#FFF';
+                    gCtx.font = 'bold 9px sans-serif';
+                    gCtx.textAlign = 'center';
+                    gCtx.fillText(p.text, p.x, p.y + 3);
+                    gCtx.restore();
+
+                    // Collision Check
+                    let dx = p.x - shield.x;
+                    let dy = p.y - shield.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < p.radius + shield.radius) {
+                        score += 10;
+                        document.getElementById('gameScore').innerText = score;
+
+                        for (let k = 0; k < 8; k++) {
+                            particlesEffect.push({
+                                x: p.x,
+                                y: p.y,
+                                vx: (Math.random() - 0.5) * 6,
+                                vy: (Math.random() - 0.5) * 6,
+                                life: 20,
+                                color: '#FFCA28'
+                            });
+                        }
+
+                        projectiles.splice(i, 1);
+                        continue;
+                    }
+
+                    if (p.y > gCanvas.height - 15) {
+                        health -= 15;
+                        if (health < 0) health = 0;
+                        document.getElementById('bagHealth').innerText = health + '%';
+                        
+                        if (health === 0) {
+                            isGaming = false;
+                            document.getElementById('gameOverlay').style.display = 'flex';
+                        }
+                        projectiles.splice(i, 1);
+                    }
+                }
+
+                for (let i = particlesEffect.length - 1; i >= 0; i--) {
+                    let sp = particlesEffect[i];
+                    sp.x += sp.vx;
+                    sp.y += sp.vy;
+                    sp.life--;
+
+                    gCtx.fillStyle = sp.color;
+                    gCtx.fillRect(sp.x, sp.y, 3, 3);
+
+                    if (sp.life <= 0) particlesEffect.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.onload = function() {
+            gameLoop();
+        };
+    </script>
+</body>
+</html>
